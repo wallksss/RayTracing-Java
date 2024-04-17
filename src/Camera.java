@@ -3,7 +3,6 @@ public class Camera {
     private double viewportHeight;
     private double viewportWidth;
     private Vec3 cameraCenter;
-
     Camera(double focalLength, double viewportHeight, double viewportWidth, Vec3 cameraCenter) {
         this.focalLength = focalLength;
         this.viewportHeight = viewportHeight;

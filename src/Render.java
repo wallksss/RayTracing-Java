@@ -15,7 +15,7 @@ public class Render {
 
                 Ray r = new Ray(cameraCenter, rayDirection);
 
-                Vec3 pixelColor = r.rayColor();
+                Vec3 pixelColor = Ray.rayColor(r);
                 Util.writeColor(pixelColor);
             }
         }

@@ -4,7 +4,7 @@ public class Main {
         int imgWidth = img.getWidth();
         int imgHeight = img.getHeight();
 
-        Camera camera = new Camera(1.0, 2.0, (double)imgWidth/imgHeight, new Vec3(0, 0, 0));
+        Camera camera = new Camera(1.0, 2.0, (double)imgWidth/imgHeight * 2.0, new Vec3(0, 0, 0));
         Vec3 cameraCenter = camera.getCameraCenter();
         Vec3 focalLength = new Vec3(0, 0, camera.getFocalLength());
 
@@ -14,7 +14,6 @@ public class Main {
         Vec3 pixelDeltaU = viewportU.divide(imgWidth);
         Vec3 pixelDeltaV = viewportV.divide(imgHeight);
 
-        //        //possivelmente errado
         Vec3 viewportUpperLeft = cameraCenter
                 .subtract(focalLength)
                 .subtract(viewportU.divide(2))

@@ -22,8 +22,11 @@ public class Ray {
         return origin.add(direction.multiply(t));
     }
 
-    public Vec3 rayColor() {
-        Vec3 unitDirection = Vec3.unitVector(getDirection());
+    public static Vec3 rayColor(Ray r) {
+        if(Sphere.hit(new Vec3(0, 0, -1), 0.5, r)){
+            return new Vec3(1, 0, 0);
+        }
+        Vec3 unitDirection = Vec3.unitVector(r.getDirection());
         Vec3 color1 = new Vec3(1.0, 1.0, 1.0);
         Vec3 color2 = new Vec3(0.5, 0.7, 1.0);
         double a = 0.5*(unitDirection.getY() + 1.0);

@@ -15,10 +15,6 @@ bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
-### .Class ###
-src/*.class
-src/*.ppm
-
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
