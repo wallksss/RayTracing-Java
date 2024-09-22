@@ -6,12 +6,13 @@ import java.util.*;
 public class Render {
     void renderImage(int imgWidth, int imgHeight, Vec3 pixel00, Vec3 pixelDeltaU, Vec3 pixelDeltaV, Vec3 cameraCenter) {
         try {
-            BufferedWriter out = new BufferedWriter(new FileWriter("../imagem.ppm"));
+            BufferedWriter out = new BufferedWriter(new FileWriter("./imagem.ppm"));
             out.write("P3");
             out.newLine();
             out.write(imgWidth + " " + imgHeight);
             out.newLine();
             out.write("255");
+            out.newLine();
 
             for(int j = 0; j < imgHeight; j++) {
                 System.err.print("\rScanlines remaining: " + (imgHeight - j) + " ");
@@ -25,7 +26,9 @@ public class Render {
                     Ray r = new Ray(cameraCenter, rayDirection);
 
                     Vec3 pixelColor = Ray.rayColor(r);
-                    Util.writeColor(pixelColor);
+                    Util.writeColor(out, pixelColor);
+
+                    out.flush();
                 }
             }
             System.err.print("Done\n");
