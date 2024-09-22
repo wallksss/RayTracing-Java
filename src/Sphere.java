@@ -1,15 +1,15 @@
 public class Sphere {
     public static double     hit(Vec3 center, double radius, Ray r) {
         Vec3 oc = center.subtract(r.getOrigin());
-        double a = Vec3.dot(r.getDirection(), r.getDirection());
-        double b = -2 * Vec3.dot(r.getDirection(), oc);
-        double c = Vec3.dot(oc, oc) - radius*radius;
-        double discriminant = b*b - 4*a*c;
+        double a  = r.getDirection().lengthSquared();
+        double h = Vec3.dot(r.getDirection(), oc);
+        double c = oc.lengthSquared() - radius*radius;
+        double discriminant = h*h - a*c;
 
         if(discriminant < 0) {
             return -1.0;
         } else {
-            return (-b - Math.sqrt(discriminant)) / (2 * a);
+            return (h - Math.sqrt(discriminant)) / a;
         }
     }
 }
