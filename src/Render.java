@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class Render {
-    void renderImage(int imgWidth, int imgHeight, Vec3 pixel00, Vec3 pixelDeltaU, Vec3 pixelDeltaV, Vec3 cameraCenter) {
+    void renderImage(int imgWidth, int imgHeight, Vec3 pixel00, Vec3 pixelDeltaU, Vec3 pixelDeltaV, Vec3 cameraCenter, HittableList world) {
         try {
             BufferedWriter out = new BufferedWriter(new FileWriter("./imagem.ppm"));
             out.write("P3");
@@ -25,7 +25,7 @@ public class Render {
 
                     Ray r = new Ray(cameraCenter, rayDirection);
 
-                    Vec3 pixelColor = Ray.rayColor(r);
+                    Vec3 pixelColor = Ray.rayColor(r, world);
                     Util.writeColor(out, pixelColor);
 
                     out.flush();

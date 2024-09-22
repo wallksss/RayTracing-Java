@@ -4,6 +4,12 @@ public class Main {
         int imgWidth = img.getWidth();
         int imgHeight = img.getHeight();
 
+        HittableList world = new HittableList();
+        world.add(new Sphere(new Vec3(0, 0, -1), 0.5));
+        world.add(new Sphere(new Vec3(0, 0, -1), 0.5));
+        world.add(new Sphere(new Vec3(0, -100.5, -1), 100));
+
+
         Camera camera = new Camera(1.0, 2.0, (double)imgWidth/imgHeight * 2.0, new Vec3(0, 0, 0));
         Vec3 cameraCenter = camera.getCameraCenter();
         Vec3 focalLength = new Vec3(0, 0, camera.getFocalLength());
@@ -23,6 +29,6 @@ public class Main {
                 .add(pixelDeltaU.add(pixelDeltaV).multiply(0.5));
 
         Render render = new Render();
-        render.renderImage(imgWidth, imgHeight, pixel00, pixelDeltaU, pixelDeltaV, cameraCenter);
+        render.renderImage(imgWidth, imgHeight, pixel00, pixelDeltaU, pixelDeltaV, cameraCenter, world);
     }
 }

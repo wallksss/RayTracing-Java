@@ -22,11 +22,10 @@ public class Ray {
         return origin.add(direction.multiply(t));
     }
 
-    public static Vec3 rayColor(Ray r) {
-        double t = Sphere.hit(new Vec3(0, 0, -1), 0.5, r);
-        if( t > 0.0) {
-            Vec3 N = Vec3.unitVector(r.at(t).subtract(new Vec3(0, 0, -1))); //vetor normal eh a posicao do ponto (interseccao) - o centro da esfera, nesse caso o centro ta constante
-            return new Vec3(N.getX() + 1, N.getY() + 1, N.getZ() + 1).multiply(0.5);
+    public static Vec3 rayColor(Ray r, Hittable world) {
+        HitRecord rec = new HitRecord();
+        if(world.hit(r, 0, Util.INFINITY, rec)) {
+            return rec.normal.add(new Vec3(1, 1, 1).multiply(0.5));
         }
 
         Vec3 unitDirection = Vec3.unitVector(r.getDirection());
