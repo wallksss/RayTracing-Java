@@ -1,10 +1,9 @@
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 public class Util {
     public static final double INFINITY = Double.POSITIVE_INFINITY;
+    public static final double NEGATIVE_INFINITY = Double.NEGATIVE_INFINITY;
     public static final double PI = 3.1415926535897932385;
 
     public static double degreesToRadians(double degrees) {

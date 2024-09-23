@@ -24,8 +24,8 @@ public class Ray {
 
     public static Vec3 rayColor(Ray r, Hittable world) {
         HitRecord rec = new HitRecord();
-        if(world.hit(r, 0, Util.INFINITY, rec)) {
-            return rec.normal.add(new Vec3(1, 1, 1).multiply(0.5));
+        if(world.hit(r, new Interval(0, Util.INFINITY), rec)) {
+            return rec.normal.add(new Vec3(1, 1, 1)).multiply(0.5);
         }
 
         Vec3 unitDirection = Vec3.unitVector(r.getDirection());
