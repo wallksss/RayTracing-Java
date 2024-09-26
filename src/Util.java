@@ -13,6 +13,7 @@ public class Util {
     public static double randomDouble(double min, double max) {
         return min + (max - min) * randomDouble();
     }
+
     public static double degreesToRadians(double degrees) {
         return degrees * PI / 180.0;
     }

@@ -6,6 +6,7 @@ public class Camera {
     public double aspect_ratio = 1.0;
     public int image_width = 100;
     public int samples_per_pixel = 10;
+    public int max_depth = 10;
     private int image_height = 100;
     private double pixel_samples_scale;
     private static Vec3 cameraCenter;
@@ -33,9 +34,9 @@ public class Camera {
                     Vec3 pixelColor = new Vec3(0, 0, 0);
                     for(int sample = 0; sample < samples_per_pixel; sample++) {
                         Ray r = getRay(i, j);
-                        pixelColor = pixelColor.add(rayColor(r, world));
+                        pixelColor = pixelColor.add(rayColor(r, max_depth, world));
                     }
-                    writeColor(out, pixelColor.multiply(pixel_samples_scale));
+                    writeColor(out, pixelColor.multiply(pixel_samples_scale)); //divide a cor do pixel pela quantidade de amostras
                     out.flush();
                 }
             }
@@ -72,10 +73,15 @@ public class Camera {
                 .add(pixelDeltaU.add(pixelDeltaV).multiply(0.5));
     }
 
-    private static Vec3 rayColor(Ray r, Hittable world) {
+    private static Vec3 rayColor(Ray r, int depth, Hittable world) {
+        if(depth <= 0)
+            return new Vec3(0, 0, 0);
+
         HitRecord rec = new HitRecord();
-        if(world.hit(r, new Interval(0, Util.INFINITY), rec)) {
-            return rec.normal.add(new Vec3(1, 1, 1)).multiply(0.5);
+        if(world.hit(r, new Interval(0.001, Util.INFINITY), rec)) {
+            //Vec3 direction = Vec3.randomOnHemisphere(rec.normal); --> previous diffuse method
+            Vec3 direction = rec.normal.add(Vec3.randomUnitVector()); //current diffuse method, which uses Lambertian Reflection
+            return rayColor(new Ray(rec.p, direction), depth - 1, world).multiply(0.5);
         }
 
         Vec3 unitDirection = Vec3.unitVector(r.getDirection());
@@ -87,7 +93,7 @@ public class Camera {
                 .add(color2.multiply(a));
     }
 
-    private static Ray getRay(int i, int j) {
+    private static Ray getRay(int i, int j) { //constroi uma camera com direcao em um ponto aleatorio proximo a localizacao do pixel (i, j)
         Vec3 offset = sample_square();
         Vec3 pixel_sample = pixel00.
                 add(pixelDeltaU.multiply(i + offset.getX())).

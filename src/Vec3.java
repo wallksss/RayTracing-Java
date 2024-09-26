@@ -44,6 +44,14 @@ public class Vec3 {
         return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
     }
 
+    public static Vec3 random() {
+        return new Vec3(Util.randomDouble(), Util.randomDouble(), Util.randomDouble());
+    }
+
+    public static Vec3 random(double min, double max) {
+        return new Vec3(Util.randomDouble(min, max), Util.randomDouble(min, max), Util.randomDouble(min, max));
+    }
+
     public static void printVec3(Vec3 v) {
         System.out.println(v.e[0] + " " + v.e[1] + " " + v.e[2]);
     }
@@ -80,6 +88,23 @@ public class Vec3 {
 
     public static Vec3 unitVector(Vec3 v) {
         return divide(v, v.length());
+    }
+
+    public static Vec3 randomUnitVector() {
+        while(true) {
+            Vec3 p = random(-1, 1);
+            double lensq = p.lengthSquared();
+            if(1e-160 < lensq && lensq <= 1) //first part deals with possible infinite vectors
+                    return p.divide(Math.sqrt(lensq));
+        }
+    }
+
+    public static Vec3 randomOnHemisphere(Vec3 normal) {
+        Vec3 onUnitSphere = randomUnitVector();
+        if(Vec3.dot(onUnitSphere, normal) > 0.0)
+            return onUnitSphere;
+        else
+            return onUnitSphere.negate();
     }
 }
 

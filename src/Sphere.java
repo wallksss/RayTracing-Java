@@ -1,6 +1,6 @@
 public class Sphere extends Hittable {
-    private Vec3 center;
-    private double radius;
+    private final Vec3 center;
+    private final double radius;
 
     public Sphere(Vec3 center, double radius) {
         this.center = center;

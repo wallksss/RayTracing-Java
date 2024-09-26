@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HittableList extends Hittable{
-    private List<Hittable> objects;
+    private final List<Hittable> objects;
 
     public HittableList(){
         this.objects = new ArrayList<>();

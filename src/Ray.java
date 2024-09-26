@@ -1,11 +1,6 @@
 public class Ray {
-    private Vec3 origin;
-    private Vec3 direction;
-
-    public Ray() {
-        this.origin = new Vec3();
-        this.direction = new Vec3();
-    }
+    private final Vec3 origin;
+    private final Vec3 direction;
 
     public Ray(Vec3 origin, Vec3 direction) {
         this.origin = origin;
