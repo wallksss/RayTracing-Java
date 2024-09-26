@@ -34,6 +34,7 @@ public class HittableList extends Hittable{
                 rec.t = temp_record.t;
                 rec.p = temp_record.p;
                 rec.normal = temp_record.normal;
+                rec.material = temp_record.material;
             }
         }
         return hit_anything;

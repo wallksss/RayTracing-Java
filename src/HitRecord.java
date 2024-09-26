@@ -1,7 +1,7 @@
 public class HitRecord {
     public Point3 p;
     public Vec3 normal;
-    Material mat;
+    public Material material;
     public double t;
     public boolean front_face;
 

@@ -1,6 +1,6 @@
 import java.lang.Math;
 public class Vec3 {
-    private double[] e;
+    protected double[] e;
     public Vec3(){
         e = new double[]{0, 0, 0};
     }
@@ -42,6 +42,11 @@ public class Vec3 {
     }
     public double lengthSquared() {
         return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
+    }
+    public boolean nearZero() {
+        double s = 1e-8;
+        return (Math.abs(e[0]) < s) && (Math.abs(e[1]) < s) && (Math.abs(e[2]) < s);
+
     }
 
     public static Vec3 random() {
@@ -109,6 +114,10 @@ public class Vec3 {
             return onUnitSphere;
         else
             return onUnitSphere.negate();
+    }
+
+    public static Vec3 reflect(Vec3 v, Vec3 n) {
+        return v.subtract(n.multiply(Vec3.dot(v, n) * 2));
     }
 }
 

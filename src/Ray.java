@@ -1,8 +1,18 @@
 public class Ray {
-    private final Point3 origin;
-    private final Vec3 direction;
+    private Point3 origin;
+    private Vec3 direction;
+
+    public Ray() {
+        origin = new Point3(0, 0, 0);
+        direction = new Vec3(0, 0, 0);
+    }
 
     public Ray(Point3 origin, Vec3 direction) {
+        this.origin = origin;
+        this.direction = direction;
+    }
+
+    public void set(Point3 origin, Vec3 direction) {
         this.origin = origin;
         this.direction = direction;
     }

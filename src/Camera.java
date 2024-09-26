@@ -31,7 +31,7 @@ public class Camera {
                 System.err.print("\rScanlines remaining: " + (image_height - j) + " ");
                 System.err.flush();
                 for(int i = 0; i < image_width; i++) {
-                    Vec3 pixelColor = new Vec3(0, 0, 0);
+                    Color pixelColor = new Color(0, 0, 0);
                     for(int sample = 0; sample < samples_per_pixel; sample++) {
                         Ray r = getRay(i, j);
                         pixelColor = pixelColor.add(rayColor(r, max_depth, world));
@@ -73,20 +73,24 @@ public class Camera {
                 .add(pixelDeltaU.add(pixelDeltaV).multiply(0.5)));
     }
 
-    private static Vec3 rayColor(Ray r, int depth, Hittable world) {
+    private static Color rayColor(Ray r, int depth, Hittable world) {
         if(depth <= 0)
-            return new Vec3(0, 0, 0);
+            return new Color(0, 0 ,0);
 
         HitRecord rec = new HitRecord();
         if(world.hit(r, new Interval(0.001, Util.INFINITY), rec)) {
+            Ray scattered = new Ray();
+            Color attenuation = new Color();
             //Vec3 direction = Vec3.randomOnHemisphere(rec.normal); --> previous diffuse method
-            Vec3 direction = rec.normal.add(Vec3.randomUnitVector()); //current diffuse method, which uses Lambertian Reflection
-            return rayColor(new Ray(rec.p, direction), depth - 1, world).multiply(0.5);
+            if(rec.material != null && rec.material.scatter(r, rec, attenuation, scattered)) {
+                return Color.multiply(attenuation, (rayColor(scattered, depth - 1, world)));
+            }
+            return new Color(0, 0 ,0);
         }
 
         Vec3 unitDirection = Vec3.unitVector(r.getDirection());
-        Vec3 color1 = new Vec3(1.0, 1.0, 1.0);
-        Vec3 color2 = new Vec3(0.5, 0.7, 1.0);
+        Color color1 = new Color(1.0, 1.0, 1.0);
+        Color color2 = new Color(0.5, 0.7, 1.0);
         double a = 0.5*(unitDirection.getY() + 1.0);
         return (color1
                 .multiply(1.0 - a))

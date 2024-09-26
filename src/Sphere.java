@@ -1,10 +1,12 @@
 public class Sphere extends Hittable {
     private final Point3 center;
     private final double radius;
+    private Material material;
 
-    public Sphere(Point3 center, double radius) {
+    public Sphere(Point3 center, double radius, Material material) {
         this.center = center;
         this.radius = Math.max(0, radius);
+        this.material = material;
     }
 
     @Override
@@ -33,6 +35,7 @@ public class Sphere extends Hittable {
         rec.p = r.at(rec.t);
         Vec3 outward_normal = rec.p.subtract(center).divide(radius);
         rec.set_face_normal(r, outward_normal);
+        rec.material = this.material;
 
         return true;
     }
