@@ -9,8 +9,8 @@ public class Camera {
     public int max_depth = 10;
     private int image_height = 100;
     private double pixel_samples_scale;
-    private static Vec3 cameraCenter;
-    private static Vec3 pixel00;
+    private static Point3 cameraCenter;
+    private static Point3 pixel00;
     private static Vec3 pixelDeltaU;
     private static Vec3 pixelDeltaV;
 
@@ -36,7 +36,7 @@ public class Camera {
                         Ray r = getRay(i, j);
                         pixelColor = pixelColor.add(rayColor(r, max_depth, world));
                     }
-                    writeColor(out, pixelColor.multiply(pixel_samples_scale)); //divide a cor do pixel pela quantidade de amostras
+                    Color.writeColor(out, pixelColor.multiply(pixel_samples_scale)); //divide a cor do pixel pela quantidade de amostras
                     out.flush();
                 }
             }
@@ -52,7 +52,7 @@ public class Camera {
 
         pixel_samples_scale = 1.0 / samples_per_pixel;
 
-        cameraCenter = new Vec3(0, 0, 0);
+        cameraCenter = new Point3(0, 0, 0);
 
         double focalLength = 1.0;
         double viewport_height = 2.0;
@@ -69,8 +69,8 @@ public class Camera {
                 .subtract(viewportU.divide(2))
                 .subtract(viewportV.divide(2));
 
-        pixel00 = viewportUpperLeft
-                .add(pixelDeltaU.add(pixelDeltaV).multiply(0.5));
+        pixel00 = Point3.vecToPoint(viewportUpperLeft
+                .add(pixelDeltaU.add(pixelDeltaV).multiply(0.5)));
     }
 
     private static Vec3 rayColor(Ray r, int depth, Hittable world) {
@@ -99,7 +99,7 @@ public class Camera {
                 add(pixelDeltaU.multiply(i + offset.getX())).
                 add(pixelDeltaV.multiply(j + offset.getY()));
 
-        Vec3 ray_origin = cameraCenter;
+        Point3 ray_origin = cameraCenter;
         Vec3 ray_direction = pixel_sample.subtract(ray_origin);
 
         return new Ray(ray_origin, ray_direction);
@@ -108,33 +108,4 @@ public class Camera {
     private static Vec3 sample_square() {
         return new Vec3(Util.randomDouble() - 0.5, Util.randomDouble() - 0.5, 0);
     }
-
-    public static double linearToGamma(double linear_component) {
-        if(linear_component > 0)
-            return Math.sqrt(linear_component);
-        return 0;
-    }
-
-    public static void writeColor(BufferedWriter out, Vec3 pixelColor) {
-        double r = pixelColor.getX();
-        double g = pixelColor.getY();
-        double b = pixelColor.getZ();
-
-        r = linearToGamma(r);
-        g = linearToGamma(g);
-        b = linearToGamma(b);
-
-        Interval intensity = new Interval(0.000, 0.999);
-        int rbyte = (int)(256 * intensity.clamp(r));
-        int gbyte = (int)(256 * intensity.clamp(g));
-        int bbyte = (int)(256 * intensity.clamp(b));
-
-        try {
-            out.write(rbyte + " " + gbyte + " " + bbyte);
-            out.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 }

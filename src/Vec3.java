@@ -99,6 +99,10 @@ public class Vec3 {
         }
     }
 
+    public static Vec3 pointToVec(Point3 p) {
+        return new Vec3(p.getX(), p.getY(), p.getZ());
+    }
+
     public static Vec3 randomOnHemisphere(Vec3 normal) {
         Vec3 onUnitSphere = randomUnitVector();
         if(Vec3.dot(onUnitSphere, normal) > 0.0)

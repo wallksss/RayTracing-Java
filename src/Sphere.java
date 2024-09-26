@@ -1,8 +1,8 @@
 public class Sphere extends Hittable {
-    private final Vec3 center;
+    private final Point3 center;
     private final double radius;
 
-    public Sphere(Vec3 center, double radius) {
+    public Sphere(Point3 center, double radius) {
         this.center = center;
         this.radius = Math.max(0, radius);
     }
