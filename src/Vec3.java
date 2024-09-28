@@ -119,6 +119,14 @@ public class Vec3 {
     public static Vec3 reflect(Vec3 v, Vec3 n) {
         return v.subtract(n.multiply(Vec3.dot(v, n) * 2));
     }
+
+    public static Vec3 refract(Vec3 uv, Vec3 n, double etaiOverEtat) {
+        double cosTheta = Math.min(Vec3.dot(uv.negate(), n), 1.0);
+        Vec3 rOutPerp = uv.add(n.multiply(cosTheta)).multiply(etaiOverEtat);
+        Vec3 rOutParallel = n.multiply(-Math.sqrt(Math.abs(1.0 - rOutPerp.lengthSquared())));
+        return rOutPerp.add(rOutParallel);
+    }
+
 }
 
 

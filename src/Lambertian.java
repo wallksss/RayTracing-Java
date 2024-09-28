@@ -14,6 +14,7 @@ public class Lambertian extends Material {
 
         scattered.set(rec.p, scatter_direction);
         attenuation.set(albedo);
+
         return true;
     }
 }

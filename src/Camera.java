@@ -36,7 +36,7 @@ public class Camera {
                         Ray r = getRay(i, j);
                         pixelColor = pixelColor.add(rayColor(r, max_depth, world));
                     }
-                    Color.writeColor(out, pixelColor.multiply(pixel_samples_scale)); //divide a cor do pixel pela quantidade de amostras
+                    Color.writeColor(out, pixelColor.multiply(pixel_samples_scale)); //divides pixel color by the sample amount
                     out.flush();
                 }
             }
@@ -97,7 +97,7 @@ public class Camera {
                 .add(color2.multiply(a));
     }
 
-    private static Ray getRay(int i, int j) { //constroi uma camera com direcao em um ponto aleatorio proximo a localizacao do pixel (i, j)
+    private static Ray getRay(int i, int j) { //builds a camera with direction at a random point close to the location of pixel (i, j)
         Vec3 offset = sample_square();
         Vec3 pixel_sample = pixel00.
                 add(pixelDeltaU.multiply(i + offset.getX())).
