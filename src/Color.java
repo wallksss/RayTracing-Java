@@ -100,4 +100,12 @@ public class Color extends Vec3 {
     public static Color vecToColor(Vec3 v) {
         return new Color(v.getX(), v.getY(), v.getZ());
     }
+
+    public int getRGB() {
+        int r = (int) (e[0] * 255.0);
+        int g = (int) (e[1] * 255.0);
+        int b = (int) (e[2] * 255.0);
+
+        return (r << 16) | (g << 8) | b;
+    }
 }

@@ -7,43 +7,65 @@ public class Camera {
     public int image_width = 100;
     public int samples_per_pixel = 10;
     public int max_depth = 10;
-    private int image_height = 100;
+    public int image_height = 100;
     private double pixel_samples_scale;
     private static Point3 cameraCenter;
     private static Point3 pixel00;
     private static Vec3 pixelDeltaU;
     private static Vec3 pixelDeltaV;
 
+    //    public void render(Hittable world) {
+//        initialize();
+//
+//        try {
+//            BufferedWriter out = new BufferedWriter(new FileWriter("./imagem.ppm"));
+//            out.write("P3");
+//            out.newLine();
+//            out.write(image_width + " " + image_height);
+//            out.newLine();
+//            out.write("255");
+//            out.newLine();
+//
+//            for(int j = 0; j < image_height; j++) {
+//                System.err.print("\rScanlines remaining: " + (image_height - j) + " ");
+//                System.err.flush();
+//                for(int i = 0; i < image_width; i++) {
+//                    Color pixelColor = new Color(0, 0, 0);
+//                    for(int sample = 0; sample < samples_per_pixel; sample++) {
+//                        Ray r = getRay(i, j);
+//                        pixelColor = pixelColor.add(rayColor(r, max_depth, world));
+//                    }
+//                    Color.writeColor(out, pixelColor.multiply(pixel_samples_scale)); //divides pixel color by the sample amount
+//                    out.flush();
+//                }
+//            }
+//            System.err.print("Done\n");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
-    public void render(Hittable world) {
+    public void render(Hittable world, Window currentWindow) {
         initialize();
+        currentWindow.initialize();
 
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter("./imagem.ppm"));
-            out.write("P3");
-            out.newLine();
-            out.write(image_width + " " + image_height);
-            out.newLine();
-            out.write("255");
-            out.newLine();
-
-            for(int j = 0; j < image_height; j++) {
-                System.err.print("\rScanlines remaining: " + (image_height - j) + " ");
-                System.err.flush();
-                for(int i = 0; i < image_width; i++) {
-                    Color pixelColor = new Color(0, 0, 0);
-                    for(int sample = 0; sample < samples_per_pixel; sample++) {
-                        Ray r = getRay(i, j);
-                        pixelColor = pixelColor.add(rayColor(r, max_depth, world));
-                    }
-                    Color.writeColor(out, pixelColor.multiply(pixel_samples_scale)); //divides pixel color by the sample amount
-                    out.flush();
+        for (int j = 0; j < image_height; j++) {
+            System.err.print("\rScanlines remaining: " + (image_height - j) + " ");
+            System.err.flush();
+            for (int i = 0; i < image_width; i++) {
+                Color pixelColor = new Color(0, 0, 0);
+                for (int sample = 0; sample < samples_per_pixel; sample++) {
+                    Ray r = getRay(i, j);
+                    pixelColor = pixelColor.add(rayColor(r, max_depth, world));
                 }
+
+                pixelColor = pixelColor.multiply(pixel_samples_scale);
+                currentWindow.setPixel(i, j, pixelColor);
             }
-            System.err.print("Done\n");
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        System.err.print("Done\n");
+
+        currentWindow.repaint();
     }
 
     private void initialize() {
