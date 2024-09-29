@@ -1,53 +1,30 @@
-import java.awt.*;
-import java.awt.color.ColorSpace;
-import java.awt.event.*;
-import java.awt.image.*;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Random;
 import javax.swing.*;
 
 public class Window extends JComponent implements Runnable {
-    byte[] data;
-    static BufferedImage image;
-    Random random;
-    static int w;
-    static int h;
+    private Renderer renderer;
+    private ImagePanel imagePanel;
+    private JFrame window;
 
-    public void initialize() {
-        w = getSize().width;
-        h = getSize( ).height;
-        data = new byte[w * h * 3]; // 3 bytes por pixel para RGB
-        DataBuffer db = new DataBufferByte(data, data.length);
-        WritableRaster wr = Raster.createInterleavedRaster(db, w, h, 3 * w, 3, new int[]{0, 1, 2}, null);
-        ColorModel cm = new ComponentColorModel(
-                ColorSpace.getInstance(ColorSpace.CS_sRGB),
-                new int[]{8, 8, 8}, false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
-        image = new BufferedImage(cm, wr, false, null);
-        random = new Random();
+    public Window(String title, int width, int height, Renderer renderer) {
+        this.renderer = renderer;
+
+        this.window = new JFrame(title);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        this.imagePanel = new ImagePanel(width, height, renderer);
+        window.add(imagePanel);
+        window.pack();
+        window.setVisible(true);
     }
 
-    public void setPixel(int x, int y, Color color) {
-        if (x < 0 || x >= w || y < 0 || y >= h) {
-            throw new ArrayIndexOutOfBoundsException("Coordinate out of bounds: " + x + ", " + y);
-        }
-        int rgb = color.getRGB();
-
-        image.setRGB(x, y, rgb);
-    }
-
-    public void run( ) {
+    public void run() {
         while (true) {
-            random.nextBytes(data);
-            repaint( );
-            try { Thread.sleep(1000 / 24); }
-            catch( InterruptedException e ) { /* die */ }
+            imagePanel.repaint();
+            try {
+                Thread.sleep(1000 / 24);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-    }
-
-    public void paint(Graphics g) {
-        if (image == null) initialize( );
-        g.drawImage(image, 0, 0, this);
     }
 }
