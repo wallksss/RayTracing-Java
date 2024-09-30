@@ -1,10 +1,12 @@
+import java.util.logging.XMLFormatter;
+
 public class Camera {
     public double aspect_ratio = 1.0;
     public int image_width = 100;
     public int image_height = 100;
     public double view_fov = 90;
-    public Vec3 direction = new Vec3(0, 0, -1); // Nova direção da câmera
-    public Vec3 v_up = new Vec3(0, 1, 0);       // Vetor de "cima"
+    public Vec3 direction;
+    public Vec3 v_up = new Vec3(0, 1, 0);
     public int samples_per_pixel = 10;
     public int max_depth = 10;
 
@@ -15,22 +17,27 @@ public class Camera {
     public Vec3 pixelDeltaV;
     private static Vec3 u, v, w;
 
+    private double pitch = 0;
+    private double yaw = 0;
+
     public void initialize() {
+        double x = Math.cos(Math.toRadians(pitch)) * Math.sin(Math.toRadians(yaw));
+        double y = Math.sin(Math.toRadians(pitch));
+        double z = Math.cos(Math.toRadians(pitch)) * Math.cos(Math.toRadians(yaw));
+        direction = Vec3.unitVector(new Vec3(x, y, z));
+
         image_height = (int) (image_width / aspect_ratio);
         image_height = Math.max(image_height, 1);
 
         pixel_samples_scale = 1.0 / samples_per_pixel;
 
-        cameraCenter = cameraCenter;  // Posiciona a câmera
-
-        double focalLength = direction.length(); // Comprimento focal agora baseado na direção
+        double focalLength = direction.length();
         double theta = Math.toRadians(view_fov);
         double h = Math.tan(theta / 2);
         double viewport_height = 2 * h * focalLength;
         double viewport_width = viewport_height * ((double) image_width / image_height);
 
-        // Direção é usada em vez de `look_at`
-        w = Vec3.unitVector(direction.negate()); // Vetor w agora é baseado na direção
+        w = Vec3.unitVector(direction.negate());
         u = Vec3.unitVector(Vec3.cross(v_up, w));
         v = Vec3.cross(w, u);
 
@@ -49,15 +56,22 @@ public class Camera {
                 .add(pixelDeltaU.add(pixelDeltaV).multiply(0.5)));
     }
 
-    public void setCameraDirection(double x, double y, double z) {
-        direction = direction.add(new Vec3(x, y, z));
+
+    public void rotateCamera(double deltaPitch, double deltaYaw) {
+        pitch += deltaPitch;
+        yaw += deltaYaw;
         initialize();
     }
 
     public void setCameraCenter(double x, double y, double z) {
-        cameraCenter.e[0] += x;
-        cameraCenter.e[1] += y;
-        cameraCenter.e[2] += z;
+        Vec3 xAxis = Vec3.unitVector(Vec3.cross(v_up, direction));
+        Vec3 yAxis = Vec3.unitVector(v_up);
+        Vec3 zAxis = Vec3.unitVector(direction);
+
+        cameraCenter = cameraCenter.add(xAxis.multiply(x));
+        cameraCenter = cameraCenter.add(yAxis.multiply(y));
+        cameraCenter = cameraCenter.add(zAxis.multiply(z));
+
         initialize();
     }
 }
