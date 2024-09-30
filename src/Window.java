@@ -14,6 +14,7 @@ public class Window extends JComponent implements Runnable {
         this.imagePanel = new ImagePanel(width, height, renderer);
         window.add(imagePanel);
         window.pack();
+        window.setLocationRelativeTo(null);
         window.setVisible(true);
     }
 

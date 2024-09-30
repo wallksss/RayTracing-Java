@@ -130,7 +130,11 @@ public class ImagePanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        renderer.render(image);
+        try {
+            renderer.render(image);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         g.drawImage(image, 0, 0, this);
     }
 }
