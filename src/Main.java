@@ -14,17 +14,18 @@ public class Main {
 
         Camera camera = new Camera();
         camera.aspect_ratio = 16.0 / 9.0;
-        camera.image_width = 800;
+        camera.image_width = 1280;
         camera.samples_per_pixel = 1;
         camera.max_depth = 50;
         camera.view_fov = 90;
         camera.cameraCenter = new Point3(0, 0, 0);
         camera.v_up = new Vec3(0, 1, 0);
         camera.initialize();
-        Renderer renderer = new Renderer(world, camera);
+        Renderer renderer = new Renderer(camera, world);
 
         Window window = new Window("RayTracing", camera.image_width, camera.image_height, renderer);
-        Thread windowThread = new Thread(window);
-        windowThread.start();
+        window.run();
+        //Thread windowThread = new Thread(window);
+        //windowThread.start();
     }
 }
