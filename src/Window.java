@@ -28,7 +28,7 @@ public class Window extends JComponent implements Runnable {
 
         int cameraMemSize = camera.getCameraSize();
         ByteBuffer cameraMem = camera.toByteBuffer(cameraMemSize);
-        this.imagePanel = new ImagePanel(width, height, hostManager, cameraMem);
+        this.imagePanel = new ImagePanel(width, height, hostManager, cameraMem, camera);
         window.add(imagePanel);
         window.pack();
         window.setLocationRelativeTo(null);
@@ -109,11 +109,11 @@ public class Window extends JComponent implements Runnable {
     public void run() {
         while (true) {
             imagePanel.repaint();
-            try {
-                Thread.sleep(1000 / 24);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            try { //controle de fps (7 eh +- 120fps e 16 eh +- 60fps)
+//                Thread.sleep(7);
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//            }
         }
     }
 }

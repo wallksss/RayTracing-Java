@@ -1,5 +1,6 @@
 import java.lang.Math;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class Vec3 {
     protected float[] e;
@@ -130,7 +131,7 @@ public class Vec3 {
     }
 
     public byte[] toByteArray() {
-        ByteBuffer buffer = ByteBuffer.allocate(Float.BYTES * 3);
+        ByteBuffer buffer = ByteBuffer.allocate(Float.BYTES * 3).order(ByteOrder.LITTLE_ENDIAN);
         buffer.putFloat(e[0]);
         buffer.putFloat(e[1]);
         buffer.putFloat(e[2]);

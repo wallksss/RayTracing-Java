@@ -22,7 +22,6 @@ public class Main {
         camera.v_up = new Vec3(0, 1, 0);
         camera.initialize();
         Renderer renderer = new Renderer(camera, world);
-        System.out.println(camera.aspect_ratio);
         Window window = new Window("RayTracing", camera.image_width, camera.image_height, camera);
         window.run();
         //Thread windowThread = new Thread(window);

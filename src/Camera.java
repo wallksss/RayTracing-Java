@@ -1,6 +1,7 @@
 import org.jocl.Sizeof;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.logging.XMLFormatter;
 
 public class Camera {
@@ -98,7 +99,7 @@ public class Camera {
     }
 
     public ByteBuffer toByteBuffer(int bufferSize) {
-        ByteBuffer buffer = ByteBuffer.allocateDirect(bufferSize);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.LITTLE_ENDIAN);
         buffer.putFloat(aspect_ratio);
         buffer.putInt(image_width);
         buffer.putInt(image_height);
