@@ -7,6 +7,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.nio.ByteBuffer;
 
 import static org.jocl.CL.*;
 
@@ -14,22 +15,28 @@ public class ImagePanel extends JPanel {
     private final int width;
     private final int height;
     private final BufferedImage image;
+    private ByteBuffer cameraBuffer;
+    private cl_mem cameraMem;
     private cl_mem outputImageMem;
     private HostManager hostManager;
 
-    public ImagePanel(int width, int height, HostManager hostManager) {
+    public ImagePanel(int width, int height, HostManager hostManager, ByteBuffer cameraBuffer) {
         this.width = width;
         this.height = height;
         this.hostManager = hostManager;
+        this.cameraBuffer = cameraBuffer;
         image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         initImageMem();
+        initCameraMem();
     }
 
     private void initImageMem() {
         outputImageMem = clCreateBuffer(hostManager.getContext(), CL_MEM_WRITE_ONLY, width * height * Sizeof.cl_uint, null, null);
     }
 
-
+    private void initCameraMem() {
+        cameraMem = clCreateBuffer(hostManager.getContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, cameraBuffer.capacity(), Pointer.to(cameraBuffer), null);
+    }
 
 //    private void setupKeyBindings() {
 //        this.getInputMap().put(KeyStroke.getKeyStroke("W"), "moveForward");
@@ -142,7 +149,7 @@ public class ImagePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         try {
-            Renderer.render(image, hostManager, outputImageMem);
+            Renderer.render(image, hostManager, outputImageMem, cameraMem);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

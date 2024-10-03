@@ -2,30 +2,33 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 public class Window extends JComponent implements Runnable {
-    private Renderer renderer;
+    private Camera camera;
     private ImagePanel imagePanel;
     private JFrame window;
     private OpenCLUtils.Device selectedDevice;
 
-    public Window(String title, int width, int height, Renderer renderer) {
-        this.renderer = renderer;
+    public Window(String title, int width, int height, Camera camera) {
+        this.camera = camera;
 
         selectDeviceWindow();
 
         HostManager.addDevice(selectedDevice);
         HostManager.createContext(selectedDevice);
         HostManager.createCommandQueue(selectedDevice);
-        HostManager.createProgram("src/kernels/random.cl");
+        HostManager.createProgram("src/kernels/render.cl");
         HostManager.createKernel("render_kernel");
         HostManager hostManager = HostManager.getInstance();
 
         this.window = new JFrame(title);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        this.imagePanel = new ImagePanel(width, height, hostManager);
+        int cameraMemSize = camera.getCameraSize();
+        ByteBuffer cameraMem = camera.toByteBuffer(cameraMemSize);
+        this.imagePanel = new ImagePanel(width, height, hostManager, cameraMem);
         window.add(imagePanel);
         window.pack();
         window.setLocationRelativeTo(null);

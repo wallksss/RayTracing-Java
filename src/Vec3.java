@@ -1,29 +1,31 @@
 import java.lang.Math;
+import java.nio.ByteBuffer;
+
 public class Vec3 {
-    protected double[] e;
+    protected float[] e;
     public Vec3(){
-        e = new double[]{0, 0, 0};
+        e = new float[]{0, 0, 0};
     }
-    public Vec3(double e0, double e1, double e2) {
-        e = new double[]{e0, e1, e2};
+    public Vec3(float e0, float e1, float e2) {
+        e = new float[]{e0, e1, e2};
     }
-    public double getX() {
+    public float getX() {
         return e[0];
     }
-    public double getY() {
+    public float getY() {
         return e[1];
     }
-    public double getZ() {
+    public float getZ() {
         return e[2];
     }
 
     public Vec3 negate() {
         return new Vec3(-e[0], -e[1], -e[2]);
     }
-    public double get(int i) {
+    public float get(int i) {
         return e[i];
     }
-    public void set(int i, double value) {
+    public void set(int i, float value) {
         e[i] = value;
     }
     public Vec3 add(Vec3 v) {
@@ -31,30 +33,30 @@ public class Vec3 {
     public Vec3 subtract(Vec3 v) {
         return new Vec3(e[0] - v.e[0], e[1] - v.e[1], e[2] - v.e[2]);
     }
-    public Vec3 multiply(double t) {
+    public Vec3 multiply(float t) {
         return new Vec3(e[0] * t, e[1] * t, e[2] * t);
     }
-    public Vec3 divide(double t) {
-        return multiply(1.0 / t);
+    public Vec3 divide(float t) {
+        return multiply((float) (1.0 / t));
     }
-    public double length() {
-        return Math.sqrt(lengthSquared());
+    public float length() {
+        return (float) Math.sqrt(lengthSquared());
     }
-    public double lengthSquared() {
+    public float lengthSquared() {
         return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
     }
     public boolean nearZero() {
-        double s = 1e-8;
+        float s = 1e-8F;
         return (Math.abs(e[0]) < s) && (Math.abs(e[1]) < s) && (Math.abs(e[2]) < s);
 
     }
 
     public static Vec3 random() {
-        return new Vec3(Util.randomDouble(), Util.randomDouble(), Util.randomDouble());
+        return new Vec3(Util.randomFloat(), Util.randomFloat(), Util.randomFloat());
     }
 
-    public static Vec3 random(double min, double max) {
-        return new Vec3(Util.randomDouble(min, max), Util.randomDouble(min, max), Util.randomDouble(min, max));
+    public static Vec3 random(float min, float max) {
+        return new Vec3(Util.randomFloat(min, max), Util.randomFloat(min, max), Util.randomFloat(min, max));
     }
 
     public static void printVec3(Vec3 v) {
@@ -73,15 +75,15 @@ public class Vec3 {
         return new Vec3(u.e[0] * v.e[0], u.e[1] * v.e[1], u.e[2] * v.e[2]);
     }
 
-    public static Vec3 multiply(Vec3 v, double t) {
+    public static Vec3 multiply(Vec3 v, float t) {
         return new Vec3(v.e[0] * t, v.e[1] * t, v.e[2] * t);
     }
 
-    public static Vec3 divide(Vec3 v, double t) {
-        return multiply(v, 1.0 /t);
+    public static Vec3 divide(Vec3 v, float t) {
+        return multiply(v, (float) (1.0 /t));
     }
 
-    public static double dot(Vec3 u, Vec3 v) {
+    public static float dot(Vec3 u, Vec3 v) {
         return (u.e[0] * v.e[0]) + (u.e[1] * v.e[1]) + (u.e[2] * v.e[2]);
     }
 
@@ -98,9 +100,9 @@ public class Vec3 {
     public static Vec3 randomUnitVector() {
         while(true) {
             Vec3 p = random(-1, 1);
-            double lensq = p.lengthSquared();
+            float lensq = p.lengthSquared();
             if(1e-160 < lensq && lensq <= 1) //first part deals with possible infinite vectors
-                    return p.divide(Math.sqrt(lensq));
+                    return p.divide((float) Math.sqrt(lensq));
         }
     }
 
@@ -120,13 +122,20 @@ public class Vec3 {
         return v.subtract(n.multiply(Vec3.dot(v, n) * 2));
     }
 
-    public static Vec3 refract(Vec3 uv, Vec3 n, double etaiOverEtat) {
-        double cosTheta = Math.min(Vec3.dot(uv.negate(), n), 1.0);
+    public static Vec3 refract(Vec3 uv, Vec3 n, float etaiOverEtat) {
+        float cosTheta = (float) Math.min(Vec3.dot(uv.negate(), n), 1.0);
         Vec3 rOutPerp = uv.add(n.multiply(cosTheta)).multiply(etaiOverEtat);
-        Vec3 rOutParallel = n.multiply(-Math.sqrt(Math.abs(1.0 - rOutPerp.lengthSquared())));
+        Vec3 rOutParallel = n.multiply((float) -Math.sqrt(Math.abs(1.0 - rOutPerp.lengthSquared())));
         return rOutPerp.add(rOutParallel);
     }
 
+    public byte[] toByteArray() {
+        ByteBuffer buffer = ByteBuffer.allocate(Float.BYTES * 3);
+        buffer.putFloat(e[0]);
+        buffer.putFloat(e[1]);
+        buffer.putFloat(e[2]);
+        return buffer.array();
+    }
 }
 
 

@@ -23,7 +23,7 @@ public class Ray {
     public Vec3 getDirection() {
         return direction;
     }
-    public Point3 at(double t) {
+    public Point3 at(float t) {
         return origin.add(direction.multiply(t));
     }
 }

@@ -1,9 +1,9 @@
 public class Sphere extends Hittable {
     private final Point3 center;
-    private final double radius;
+    private final float radius;
     private Material material;
 
-    public Sphere(Point3 center, double radius, Material material) {
+    public Sphere(Point3 center, float radius, Material material) {
         this.center = center;
         this.radius = Math.max(0, radius);
         this.material = material;
@@ -12,18 +12,18 @@ public class Sphere extends Hittable {
     @Override
     public boolean hit(Ray r, Interval ray_t, HitRecord rec) {
         Vec3 oc = center.subtract(r.getOrigin());
-        double a  = r.getDirection().lengthSquared();
-        double h = Vec3.dot(r.getDirection(), oc);
-        double c = oc.lengthSquared() - radius*radius;
-        double discriminant = h*h - a*c;
+        float a  = r.getDirection().lengthSquared();
+        float h = Vec3.dot(r.getDirection(), oc);
+        float c = oc.lengthSquared() - radius*radius;
+        float discriminant = h*h - a*c;
 
         if(discriminant < 0) {
             return false;
         }
 
-        double sqrtd = Math.sqrt(discriminant);
+        float sqrtd = (float) Math.sqrt(discriminant);
 
-        double root = (h - sqrtd) / a;
+        float root = (h - sqrtd) / a;
         if(!ray_t.surrounds(root)) {
             root = (h + sqrtd) / a;
             if(!ray_t.surrounds(root)) {

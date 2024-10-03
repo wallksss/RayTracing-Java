@@ -3,7 +3,7 @@ public class Point3 extends Vec3 {
         super();
     }
 
-    public Point3(double e0, double e1, double e2) {
+    public Point3(float e0, float e1, float e2) {
         super(e0, e1, e2);
     }
 
@@ -23,21 +23,21 @@ public class Point3 extends Vec3 {
     }
 
     @Override
-    public Point3 multiply(double t) {
+    public Point3 multiply(float t) {
         return new Point3(getX() * t, getY() * t, getZ() * t);
     }
 
     @Override
-    public Point3 divide(double t) {
-        return multiply(1.0 / t);
+    public Point3 divide(float t) {
+        return multiply((float) (1.0 / t));
     }
 
     public static Point3 random() {
-        return new Point3(Util.randomDouble(), Util.randomDouble(), Util.randomDouble());
+        return new Point3(Util.randomFloat(), Util.randomFloat(), Util.randomFloat());
     }
 
-    public static Point3 random(double min, double max) {
-        return new Point3(Util.randomDouble(min, max), Util.randomDouble(min, max), Util.randomDouble(min, max));
+    public static Point3 random(float min, float max) {
+        return new Point3(Util.randomFloat(min, max), Util.randomFloat(min, max), Util.randomFloat(min, max));
     }
 
     public static Point3 add(Point3 u, Point3 v) {
@@ -52,12 +52,12 @@ public class Point3 extends Vec3 {
         return new Point3(u.getX() * v.getX(), u.getY() * v.getY(), u.getZ() * v.getZ());
     }
 
-    public static Point3 multiply(Point3 v, double t) {
+    public static Point3 multiply(Point3 v, float t) {
         return new Point3(v.getX() * t, v.getY() * t, v.getZ() * t);
     }
 
-    public static Point3 divide(Point3 v, double t) {
-        return multiply(v, 1.0 / t);
+    public static Point3 divide(Point3 v, float t) {
+        return multiply(v, (float) (1.0 / t));
     }
 
     public static Point3 vecToPoint(Vec3 v) {

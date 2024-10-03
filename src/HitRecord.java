@@ -2,7 +2,7 @@ public class HitRecord {
     public Point3 p;
     public Vec3 normal;
     public Material material;
-    public double t;
+    public float t;
     public boolean front_face;
 
     void set_face_normal(Ray r, Vec3 outward_normal) {

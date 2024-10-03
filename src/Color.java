@@ -6,7 +6,7 @@ public class Color extends Vec3 {
         super();
     }
 
-    public Color(double e0, double e1, double e2) {
+    public Color(float e0, float e1, float e2) {
         super(e0, e1, e2);
     }
 
@@ -16,22 +16,22 @@ public class Color extends Vec3 {
         e[2] = c.getZ();
     }
     
-    public static double linearToGamma(double linear_component) {
+    public static float linearToGamma(float linear_component) {
         if(linear_component > 0)
-            return Math.sqrt(linear_component);
+            return (float) Math.sqrt(linear_component);
         return 0;
     }
 
     public static void writeColor(BufferedWriter out, Color pixelColor) {
-        double r = pixelColor.getX();
-        double g = pixelColor.getY();
-        double b = pixelColor.getZ();
+        float r = pixelColor.getX();
+        float g = pixelColor.getY();
+        float b = pixelColor.getZ();
 
         r = linearToGamma(r);
         g = linearToGamma(g);
         b = linearToGamma(b);
 
-        Interval intensity = new Interval(0.000, 0.999);
+        Interval intensity = new Interval(0.000f, 0.999f);
         int rbyte = (int)(256 * intensity.clamp(r));
         int gbyte = (int)(256 * intensity.clamp(g));
         int bbyte = (int)(256 * intensity.clamp(b));
@@ -60,21 +60,21 @@ public class Color extends Vec3 {
     }
 
     @Override
-    public Color multiply(double t) {
+    public Color multiply(float t) {
         return new Color(getX() * t, getY() * t, getZ() * t);
     }
 
     @Override
-    public Color divide(double t) {
-        return multiply(1.0 / t);
+    public Color divide(float t) {
+        return multiply((float) (1.0 / t));
     }
 
     public static Color random() {
-        return new Color(Util.randomDouble(), Util.randomDouble(), Util.randomDouble());
+        return new Color(Util.randomFloat(), Util.randomFloat(), Util.randomFloat());
     }
 
-    public static Color random(double min, double max) {
-        return new Color(Util.randomDouble(min, max), Util.randomDouble(min, max), Util.randomDouble(min, max));
+    public static Color random(float min, float max) {
+        return new Color(Util.randomFloat(min, max), Util.randomFloat(min, max), Util.randomFloat(min, max));
     }
 
     public static Color add(Color u, Color v) {
@@ -89,12 +89,12 @@ public class Color extends Vec3 {
         return new Color(u.getX() * v.getX(), u.getY() * v.getY(), u.getZ() * v.getZ());
     }
 
-    public static Color multiply(Color v, double t) {
+    public static Color multiply(Color v, float t) {
         return new Color(v.getX() * t, v.getY() * t, v.getZ() * t);
     }
 
-    public static Color divide(Color v, double t) {
-        return multiply(v, 1.0 / t);
+    public static Color divide(Color v, float t) {
+        return multiply(v, (float) (1.0 / t));
     }
 
     public static Color vecToColor(Vec3 v) {

@@ -2,6 +2,8 @@ import org.jocl.*;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.nio.ByteBuffer;
+
 import static org.jocl.CL.*;
 
 public class Renderer {
@@ -21,7 +23,7 @@ public class Renderer {
         return camera;
     }
 
-    public static void render(BufferedImage image, HostManager hostManager, cl_mem outputImageMem) {
+    public static void render(BufferedImage image, HostManager hostManager, cl_mem outputImageMem, cl_mem cameraMem) {
         long[] globalWorkSize = new long[2];
         globalWorkSize[0] = width;
         globalWorkSize[1] = height;
@@ -29,7 +31,7 @@ public class Renderer {
         clSetKernelArg(hostManager.getKernel(), 0, Sizeof.cl_mem, Pointer.to(outputImageMem));
         clSetKernelArg(hostManager.getKernel(), 1, Sizeof.cl_uint, Pointer.to(new int[]{width}));
         clSetKernelArg(hostManager.getKernel(), 2, Sizeof.cl_uint, Pointer.to(new int[]{height}));
-
+        CL.clSetKernelArg(hostManager.getKernel(), 3, Sizeof.cl_mem, Pointer.to(cameraMem));
         clEnqueueNDRangeKernel(hostManager.getCommandQueue(), hostManager.getKernel(), 2, null, globalWorkSize, null, 0, null, null);
 
         int[] output = new int[width * height];

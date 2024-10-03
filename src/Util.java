@@ -1,20 +1,20 @@
 import java.util.Random;
 
 public class Util {
-    public static final double INFINITY = Double.POSITIVE_INFINITY;
-    public static final double NEGATIVE_INFINITY = Double.NEGATIVE_INFINITY;
-    public static final double PI = 3.1415926535897932385;
+    public static final float INFINITY = Float.POSITIVE_INFINITY;
+    public static final float NEGATIVE_INFINITY = Float.NEGATIVE_INFINITY;
+    public static final float PI = 3.1415926535897932385f;
     private static final Random random = new Random();
 
-    public static double randomDouble() {
-        return random.nextDouble();
+    public static float randomFloat() {
+        return random.nextFloat();
     }
 
-    public static double randomDouble(double min, double max) {
-        return min + (max - min) * randomDouble();
+    public static float randomFloat(float min, float max) {
+        return min + (max - min) * randomFloat();
     }
 
-    public static double degreesToRadians(double degrees) {
-        return degrees * PI / 180.0;
+    public static float degreesToRadians(float degrees) {
+        return degrees * PI / 180.0f;
     }
 }

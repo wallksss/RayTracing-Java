@@ -1,8 +1,8 @@
     public class Metal extends Material {
         private Color albedo;
-        private double fuzz;
+        private float fuzz;
 
-        public Metal(Color albedo, double fuzz) {
+        public Metal(Color albedo, float fuzz) {
             this.albedo = albedo;
             this.fuzz = fuzz < 1 ? fuzz : 1;
         }
