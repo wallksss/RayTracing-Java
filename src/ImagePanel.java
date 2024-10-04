@@ -52,7 +52,7 @@ public class ImagePanel extends JPanel {
         this.getActionMap().put("moveForward", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                camera.setCameraCenter(0, 0, -1);
+                camera.setCameraCenter(0, 0, 0.1f);
                 updateCameraMem();
             }
         });
@@ -61,7 +61,7 @@ public class ImagePanel extends JPanel {
         this.getActionMap().put("moveBackward", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                camera.setCameraCenter(0, 0, 1);
+                camera.setCameraCenter(0, 0, -0.1f);
                 updateCameraMem();
             }
         });
@@ -70,7 +70,7 @@ public class ImagePanel extends JPanel {
         this.getActionMap().put("moveLeft", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                camera.setCameraCenter(-1, 0, 0);
+                camera.setCameraCenter(0.1f, 0, 0);
                 updateCameraMem();
             }
         });
@@ -79,7 +79,7 @@ public class ImagePanel extends JPanel {
         this.getActionMap().put("moveRight", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                camera.setCameraCenter(1, 0, 0);
+                camera.setCameraCenter(-0.1f, 0, 0);
                 updateCameraMem();
             }
         });
@@ -88,7 +88,7 @@ public class ImagePanel extends JPanel {
         this.getActionMap().put("moveUp", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                camera.setCameraCenter(0, -1, 0);
+                camera.setCameraCenter(0, 0.1f, 0);
                 updateCameraMem();
             }
         });
@@ -98,7 +98,7 @@ public class ImagePanel extends JPanel {
         this.getActionMap().put("moveDown", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                camera.setCameraCenter(0, 1, 0);
+                camera.setCameraCenter(0, -0.1f, 0);
                 updateCameraMem();
             }
         });
