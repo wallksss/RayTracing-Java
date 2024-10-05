@@ -20,6 +20,7 @@ public class Main {
         camera.view_fov = 90;
         camera.cameraCenter = new Point3(0, 0, 0);
         camera.v_up = new Vec3(0, 1, 0);
+        camera.pitch = 180;
         camera.initialize();
         Renderer renderer = new Renderer(camera, world);
         Window window = new Window("RayTracing", camera.image_width, camera.image_height, camera);

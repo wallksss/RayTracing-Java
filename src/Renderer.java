@@ -3,6 +3,7 @@ import org.jocl.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.nio.ByteBuffer;
+import java.util.Random;
 
 import static org.jocl.CL.*;
 
@@ -27,6 +28,12 @@ public class Renderer {
         long[] globalWorkSize = new long[2];
         globalWorkSize[0] = width;
         globalWorkSize[1] = height;
+
+        int[] seeds = new int[width * height];
+        Random random = new Random(System.currentTimeMillis());
+        for (int i = 0; i < seeds.length; i++) {
+            seeds[i] = random.nextInt();
+        }
 
         clSetKernelArg(hostManager.getKernel(), 0, Sizeof.cl_mem, Pointer.to(outputImageMem));
         clSetKernelArg(hostManager.getKernel(), 1, Sizeof.cl_uint, Pointer.to(new int[]{width}));

@@ -61,7 +61,7 @@ public class HostManager {
     public static void createProgram(String src) {
         String source = readFile(src);
         program = clCreateProgramWithSource(context, 1, new String[]{source}, null, null);
-        clBuildProgram(program, 0, null, "-cl-mad-enable", null, null);
+        clBuildProgram(program, 0, null, "-I -cl-mad-enable", null, null);
     }
 
     public static void createKernel(String kernel_name) {

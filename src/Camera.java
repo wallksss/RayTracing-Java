@@ -21,8 +21,8 @@ public class Camera {
     public Vec3 pixelDeltaV;
     private static Vec3 u, v, w;
 
-    private float pitch = 0;
-    private float yaw = 0;
+    public float pitch = 0;
+    public float yaw = 0;
 
     public void initialize() {
         float x = (float) (Math.cos(Math.toRadians(pitch)) * Math.sin(Math.toRadians(yaw)));

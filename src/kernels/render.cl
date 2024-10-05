@@ -12,7 +12,13 @@ typedef struct {
 typedef struct {
     Point center;
     float radius;
+    int material;
 } Sphere;
+
+#define LAMBERTIAN 1
+#define METAL 2
+#define DIELETRIC 3
+
 
 typedef struct {
     Sphere objects[100];
@@ -20,11 +26,51 @@ typedef struct {
 } World;
 
 typedef struct {
+    float min;
+    float max;
+} Interval;
+
+typedef struct {
     Point p;
     Vec3 normal;
     float t;
     char front_face;
 } HitRecord;
+
+Interval make_empty_interval() {
+    Interval result;
+    result.min = +FLT_MAX;
+    result.max = -FLT_MAX;
+    return result;
+}
+
+Interval make_interval(float min, float max) {
+    Interval result;
+    result.min = min;
+    result.max = max;
+    return result;
+}
+
+float interval_size(Interval* i) {
+    return i->max - i->min;
+}
+
+int interval_contains(Interval* i, float x) {
+    return (i->min <= x) && (x <= i->max);
+}
+
+int interval_surrounds(Interval* i, float x) {
+    return (i->min < x) && (x < i->max);
+}
+
+float interval_clamp(Interval* i, float x) {
+    if(x < i->min) return i->min;
+    if(x > i->max) return i->max;
+    return x;
+}
+
+__constant Interval interval_empty = { +FLT_MAX, -FLT_MAX };
+__constant Interval interval_universe = { -FLT_MAX, +FLT_MAX };
 
 inline Vec3 vec3_create(float e1, float e2, float e3) {
     Vec3 v;
@@ -119,6 +165,10 @@ inline void set_face_normal(HitRecord* rec, Ray* r, Vec3* outward_normal) {
     rec->normal = rec->front_face ? *outward_normal : normal_negate;
 }
 
+inline float degrees_to_radian(float degrees) {
+    return degrees * M_PI_F / 180;
+}
+
 typedef struct __attribute__((packed)) {
     float aspect_ratio;
     int image_width;
@@ -145,16 +195,17 @@ void write_color(__global uint* output, Color pixel, int index) {
     float g = pixel.e[1];
     float b = pixel.e[2];
 
-    int rbyte = (int)(255.0f * r);
-    int gbyte = (int)(255.0f * g);
-    int bbyte = (int)(255.0f * b);
+    Interval intensity = make_interval(0.000, 0.9999);
+    int rbyte = (int)(256 * interval_clamp(&intensity, r));
+    int gbyte = (int)(256 * interval_clamp(&intensity, g));
+    int bbyte = (int)(256 * interval_clamp(&intensity, b));
 
     int pixel_color = (rbyte << 16) | (gbyte << 8) | bbyte;
 
     output[index] = pixel_color;
 }
 
-char hit(Sphere* sphere, Ray* r, float ray_tmin, float ray_tmax, HitRecord* rec){
+char hit(Sphere* sphere, Ray* r, Interval* ray_t, HitRecord* rec){
     Vec3 oc = vec3_subtract_vec(&sphere->center, &r->origin);
     float a = vec3_length_squared(&r->direction);
     float h = vec3_dot(&r->direction, &oc);
@@ -167,12 +218,12 @@ char hit(Sphere* sphere, Ray* r, float ray_tmin, float ray_tmax, HitRecord* rec)
     float sqrtd = sqrt(discriminant);
     float root = (h - sqrtd) / a;
 
-    if(root <= ray_tmin || ray_tmax <= root) {
-        root = (h + sqrtd) / a;
-        if(root <= ray_tmin || ray_tmax <= root) {
-            return 0;
-        }
+    if(!interval_surrounds(ray_t, root)){
+            root = (h + sqrtd) / a;
+            if(!interval_surrounds(ray_t, root))
+                return 0;
     }
+
     rec->t = root;
     rec->p = ray_at(r, rec->t);
     Vec3 sub = vec3_subtract_vec(&rec->p, &sphere->center);
@@ -183,16 +234,17 @@ char hit(Sphere* sphere, Ray* r, float ray_tmin, float ray_tmax, HitRecord* rec)
     return 1;
 }
 
-char world_hit(World* world, Ray* r, float ray_tmin, float ray_tmax, HitRecord* rec) {
+char world_hit(World* world, Ray* r, Interval* ray_t, HitRecord* rec) {
     HitRecord temp_record;
     HitRecord* temp_rec;
     temp_rec = &temp_record;
     char hit_anything = 0;
-    float closest_so_far = ray_tmax;
+    float closest_so_far = ray_t->max;
 
     for(int i = 0; i < world->total_objects; i++) {
         Sphere sphere = world->objects[i];
-        if(hit(&sphere, r, ray_tmin, closest_so_far, temp_rec)) {
+        Interval interval = make_interval(ray_t->min, closest_so_far);
+        if(hit(&sphere, r, &interval, temp_rec)) {
             hit_anything = 1;
             closest_so_far = temp_rec->t;
             *rec = *temp_rec;
@@ -205,7 +257,8 @@ Color ray_color(Ray* r, World* world) {
     HitRecord record;
     HitRecord *rec;
     rec = &record;
-    if(world_hit(world, r, 0.0001, INFINITY, rec)) {
+    Interval interval = make_interval(0, INFINITY);
+    if(world_hit(world, r, &interval, rec)) {
         Color color1 = vec3_create(1, 1, 1);
         Vec3 add = vec3_add_vec(&rec->normal, &color1);
         Vec3 result = vec3_multiply_scalar(&add, 0.5);
@@ -229,7 +282,6 @@ __kernel void render_kernel(__global uint* output, int width, int height, __glob
 
     Vec3 cameraX = vec3_multiply_scalar(&local_camera.pixelDeltaU, x);
     Vec3 cameraY = vec3_multiply_scalar(&local_camera.pixelDeltaV, y);
-
     Point pixel_center = vec3_add_vec(&local_camera.pixel00, &cameraX);
     pixel_center = vec3_add_vec(&pixel_center, &cameraY);
 
