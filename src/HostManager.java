@@ -59,7 +59,7 @@ public class HostManager {
     }
 
     public static void createProgram(String src) {
-        String source = readFile(src);
+        String source = readFile("src/kernels/mrg31k3p.cl") + readFile(src);
         program = clCreateProgramWithSource(context, 1, new String[]{source}, null, null);
         clBuildProgram(program, 0, null, "-I -cl-mad-enable", null, null);
     }

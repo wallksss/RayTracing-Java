@@ -152,6 +152,12 @@ inline void vec3_print(const Vec3* v) {
     printf("%f %f %f\n", v->e[0], v->e[1], v->e[2]);
 }
 
+Vec3 vec3_sample_square(mrg31k3p_state* state) {
+    float a=mrg31k3p_float(*state);
+    float b=mrg31k3p_float(*state);
+    return vec3_create(a - 0.5, b - 0.5, 0);
+}
+
 inline Point ray_at(Ray* r,float t) {
     Vec3 multi = vec3_multiply_scalar(&r->direction, t);
     Vec3 result = vec3_add_vec(&r->origin, &multi);
@@ -274,11 +280,31 @@ Color ray_color(Ray* r, World* world) {
     return vec3_add_vec(&vec1, &vec2);
 }
 
-__kernel void render_kernel(__global uint* output, int width, int height, __global Camera* camera) {
+Ray get_ray(Camera* camera, mrg31k3p_state* state, int i, int j) {
+    Vec3 offset = vec3_sample_square(state);
+
+    Vec3 offsetX = vec3_multiply_scalar(&camera->pixelDeltaU, i + offset.e[0]);
+    Vec3 offsetY = vec3_multiply_scalar(&camera->pixelDeltaV, j + offset.e[1]);
+
+    Vec3 offset_add = vec3_add_vec(&offsetX, &offsetY);
+    Point pixel_sample = vec3_add_vec(&camera->pixel00, &offset_add);
+
+    Point ray_origin = camera->camera_center;
+    Vec3 ray_direction = vec3_subtract_vec(&pixel_sample, &ray_origin);
+
+    Ray ray;
+    ray.origin = ray_origin;
+    ray.direction = ray_direction;  
+    return ray;
+}
+
+
+__kernel void render_kernel(__global uint* output, int width, int height, __global Camera* camera, __global int* seeds) {
     unsigned int x = get_global_id(0);
     unsigned int y = get_global_id(1);
     int index = y * width + x;
     Camera local_camera = *camera; //shallow copy (be careful)
+
 
     Vec3 cameraX = vec3_multiply_scalar(&local_camera.pixelDeltaU, x);
     Vec3 cameraY = vec3_multiply_scalar(&local_camera.pixelDeltaV, y);
@@ -301,7 +327,15 @@ __kernel void render_kernel(__global uint* output, int width, int height, __glob
     world.objects[1] = sphere2;
     world.total_objects = 2;
 
-    Color pixel_color = ray_color(&r, &world);
-    write_color(output, pixel_color, index);
-}
+    mrg31k3p_state state;
+    mrg31k3p_seed(&state, seeds[x]);
 
+    Color pixel_color = vec3_create(0, 0, 0);
+    for(int sample = 0; sample < local_camera.samples_per_pixel; sample++) {
+        Ray r = get_ray(&local_camera, &state, x, y);
+        Color new_color = ray_color(&r, &world);
+        pixel_color = vec3_add_vec(&pixel_color, &new_color);
+    }
+    Color final_color = vec3_multiply_scalar(&pixel_color, local_camera.pixel_samples_scale);
+    write_color(output, final_color, index);
+}

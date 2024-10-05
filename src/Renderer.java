@@ -35,10 +35,13 @@ public class Renderer {
             seeds[i] = random.nextInt();
         }
 
+        cl_mem seedMem = clCreateBuffer(hostManager.getContext(), CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, Sizeof.cl_int * seeds.length, Pointer.to(seeds), null);
+
         clSetKernelArg(hostManager.getKernel(), 0, Sizeof.cl_mem, Pointer.to(outputImageMem));
         clSetKernelArg(hostManager.getKernel(), 1, Sizeof.cl_uint, Pointer.to(new int[]{width}));
         clSetKernelArg(hostManager.getKernel(), 2, Sizeof.cl_uint, Pointer.to(new int[]{height}));
         CL.clSetKernelArg(hostManager.getKernel(), 3, Sizeof.cl_mem, Pointer.to(cameraMem));
+        clSetKernelArg(hostManager.getKernel(), 4, Sizeof.cl_mem, Pointer.to(seedMem));
         clEnqueueNDRangeKernel(hostManager.getCommandQueue(), hostManager.getKernel(), 2, null, globalWorkSize, null, 0, null, null);
 
         int[] output = new int[width * height];
@@ -48,6 +51,8 @@ public class Renderer {
                 image.setRGB(i, j, output[j * width + i]);
             }
         }
+
+        clReleaseMemObject(seedMem); //se tirar essa linha aqui o program aloca TODA a memoria do pc
     }
 }
 
