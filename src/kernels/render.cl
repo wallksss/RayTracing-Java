@@ -233,10 +233,21 @@ typedef struct __attribute__((packed)) {
     float yaw;
 } Camera;
 
+inline float linear_to_gamma(float linear_component) {
+    if(linear_component > 0) {
+        return sqrt(linear_component);
+    }
+    return 0;
+}
+
 void write_color(__global uint* output, Color pixel, int index) {
     float r = pixel.e[0];
     float g = pixel.e[1];
     float b = pixel.e[2];
+
+    r = linear_to_gamma(r);
+    g = linear_to_gamma(g);
+    b = linear_to_gamma(b);
 
     Interval intensity = make_interval(0.000, 0.9999);
     int rbyte = (int)(256 * interval_clamp(&intensity, r));
@@ -296,25 +307,35 @@ char world_hit(World* world, Ray* r, Interval* ray_t, HitRecord* rec) {
     return hit_anything;
 }
 
-Color ray_color(Ray* r, World* world) {
+Color ray_color(Ray* r, World* world, mrg31k3p_state* state, int max_depth) {
     HitRecord record;
     HitRecord *rec;
     rec = &record;
-    Interval interval = make_interval(0, INFINITY);
-    if(world_hit(world, r, &interval, rec)) {
-        Color color1 = vec3_create(1, 1, 1);
-        Vec3 add = vec3_add_vec(&rec->normal, &color1);
-        Vec3 result = vec3_multiply_scalar(&add, 0.5);
-        return result;
-    }
+    Ray current_ray = *r;
+    Interval interval = make_interval(0.001, INFINITY);
+    Color accumulated_color = vec3_create(1, 1 ,1);
+    int depth = 0;
 
-    Vec3 unit_direction = vec3_unit_vector(&r->direction);
-    float a = 0.5*(unit_direction.e[1] + 1);
-    Color color1 = vec3_create(1.0, 1.0, 1.0);
-    Color color2 = vec3_create(0.5, 0.7, 1.0);
-    Vec3 vec1 = vec3_multiply_scalar(&color1, (1 - a));
-    Vec3 vec2 = vec3_multiply_scalar(&color2, a);
-    return vec3_add_vec(&vec1, &vec2);
+    while(depth < max_depth) {
+        if(world_hit(world, &current_ray, &interval, rec)) {
+            Vec3 random = random_unit_vector(&state);
+            Vec3 direction = vec3_add_vec(&random, &rec->normal);
+            current_ray.origin = rec->p;
+            current_ray.direction = direction;
+            accumulated_color = vec3_multiply_scalar(&accumulated_color, 0.1);
+        } else {            
+            Vec3 unit_direction = vec3_unit_vector(&r->direction);
+            float a = 0.5*(unit_direction.e[1] + 1);
+            Color color1 = vec3_create(1.0, 1.0, 1.0);
+            Color color2 = vec3_create(0.5, 0.7, 1.0);
+            Vec3 vec1 = vec3_multiply_scalar(&color1, (1 - a));
+            Vec3 vec2 = vec3_multiply_scalar(&color2, a);
+            Vec3 background_color = vec3_add_vec(&vec1, &vec2);
+            return vec3_multiply_vec(&accumulated_color, &background_color);
+        }
+        depth++;
+    }
+    return vec3_create(0, 0, 0);
 }
 
 Ray get_ray(Camera* camera, mrg31k3p_state* state, int i, int j) {
@@ -370,7 +391,7 @@ __kernel void render_kernel(__global uint* output, int width, int height, __glob
     Color pixel_color = vec3_create(0, 0, 0);
     for(int sample = 0; sample < local_camera.samples_per_pixel; sample++) {
         Ray r = get_ray(&local_camera, &state, x, y);
-        Color new_color = ray_color(&r, &world);
+        Color new_color = ray_color(&r, &world, &state, local_camera.max_depth);
         pixel_color = vec3_add_vec(&pixel_color, &new_color);
     }
     Color final_color = vec3_multiply_scalar(&pixel_color, local_camera.pixel_samples_scale);

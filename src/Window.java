@@ -109,11 +109,11 @@ public class Window extends JComponent implements Runnable {
     public void run() {
         while (true) {
             imagePanel.repaint();
-//            try { //controle de fps (7 eh +- 120fps e 16 eh +- 60fps)
-//                Thread.sleep(7);
-//            } catch (InterruptedException e) {
-//                Thread.currentThread().interrupt();
-//            }
+            try { //controle de fps (7 eh +- 120fps e 16 eh +- 60fps)
+                Thread.sleep(7);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 }
