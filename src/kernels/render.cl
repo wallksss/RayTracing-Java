@@ -69,6 +69,16 @@ float interval_clamp(Interval* i, float x) {
     return x;
 }
 
+float random_float(mrg31k3p_state* state) {
+    float random = mrg31k3p_float(*state);
+    return random;
+}
+
+float random_float_interval(mrg31k3p_state* state,float min, float max) {
+    float random = min + (max - min) * random_float(state);
+    return random;
+}
+
 __constant Interval interval_empty = { +FLT_MAX, -FLT_MAX };
 __constant Interval interval_universe = { -FLT_MAX, +FLT_MAX };
 
@@ -152,9 +162,36 @@ inline void vec3_print(const Vec3* v) {
     printf("%f %f %f\n", v->e[0], v->e[1], v->e[2]);
 }
 
+Vec3 vec3_random(mrg31k3p_state* state) {
+    Vec3 random_vec = vec3_create(random_float(state), random_float(state), random_float(state));
+    return random_vec;
+}
+
+Vec3 vec3_random_interval(mrg31k3p_state* state, float min, float max) {
+    Vec3 random_vec = vec3_create(random_float_interval(state, min, max), random_float_interval(state, min, max), random_float_interval(state, min, max));
+    return random_vec;
+}
+
+inline Vec3 random_unit_vector(mrg31k3p_state* state) {
+    while(true) {
+        Vec3 p = vec3_random_interval(state, -1, 1);
+        float lensq = vec3_length_squared(&p);
+        if(1e-38f < lensq && lensq <= 1)
+            return vec3_divide_scalar(&p, sqrt(lensq));
+    }
+}
+
+inline Vec3 random_on_hemisphere(mrg31k3p_state* state, Vec3* normal) {
+    Vec3 on_unit_sphere = random_unit_vector(state);
+    if(vec3_dot(&on_unit_sphere, normal) > 0.0)
+        return on_unit_sphere;
+    else
+        return vec3_negate(&on_unit_sphere);
+}
+
 Vec3 vec3_sample_square(mrg31k3p_state* state) {
-    float a=mrg31k3p_float(*state);
-    float b=mrg31k3p_float(*state);
+    float a = random_float(state);
+    float b = random_float(state);
     return vec3_create(a - 0.5, b - 0.5, 0);
 }
 
