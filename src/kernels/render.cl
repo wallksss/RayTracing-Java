@@ -318,13 +318,13 @@ Color ray_color(Ray* r, World* world, mrg31k3p_state* state, int max_depth) {
 
     while(depth < max_depth) {
         if(world_hit(world, &current_ray, &interval, rec)) {
-            Vec3 random = random_unit_vector(&state);
+            Vec3 random = random_unit_vector(state);
             Vec3 direction = vec3_add_vec(&random, &rec->normal);
             current_ray.origin = rec->p;
             current_ray.direction = direction;
-            accumulated_color = vec3_multiply_scalar(&accumulated_color, 0.1);
-        } else {            
-            Vec3 unit_direction = vec3_unit_vector(&r->direction);
+            accumulated_color = vec3_multiply_scalar(&accumulated_color, 0.5);
+        } else {
+            Vec3 unit_direction = vec3_unit_vector(&current_ray.direction);
             float a = 0.5*(unit_direction.e[1] + 1);
             Color color1 = vec3_create(1.0, 1.0, 1.0);
             Color color2 = vec3_create(0.5, 0.7, 1.0);
@@ -386,7 +386,7 @@ __kernel void render_kernel(__global uint* output, int width, int height, __glob
     world.total_objects = 2;
 
     mrg31k3p_state state;
-    mrg31k3p_seed(&state, seeds[x]);
+    mrg31k3p_seed(&state, seeds[index]);
 
     Color pixel_color = vec3_create(0, 0, 0);
     for(int sample = 0; sample < local_camera.samples_per_pixel; sample++) {
