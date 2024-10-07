@@ -10,15 +10,19 @@ typedef struct {
 } Ray;
 
 typedef struct {
+    int type;
+    Color albedo;
+} Material;
+
+typedef struct {
     Point center;
     float radius;
-    int material;
+    Material material;
 } Sphere;
 
 #define LAMBERTIAN 1
 #define METAL 2
 #define DIELETRIC 3
-
 
 typedef struct {
     Sphere objects[100];
@@ -35,6 +39,7 @@ typedef struct {
     Vec3 normal;
     float t;
     char front_face;
+    Material material;
 } HitRecord;
 
 Interval make_empty_interval() {
@@ -189,6 +194,12 @@ inline Vec3 random_on_hemisphere(mrg31k3p_state* state, Vec3* normal) {
         return vec3_negate(&on_unit_sphere);
 }
 
+inline Vec3 vec3_reflect(Vec3* v, Vec3* n) {
+    float dot = vec3_dot(v, n) * 2;
+    Vec3 product = vec3_multiply_scalar(n, dot);
+    return vec3_subtract_vec(v, &product);
+}
+
 Vec3 vec3_sample_square(mrg31k3p_state* state) {
     float a = random_float(state);
     float b = random_float(state);
@@ -210,6 +221,11 @@ inline void set_face_normal(HitRecord* rec, Ray* r, Vec3* outward_normal) {
 
 inline float degrees_to_radian(float degrees) {
     return degrees * M_PI_F / 180;
+}
+
+char near_zero(const float e[3]) {
+    float s = 1e-8;
+    return (fabs(e[0]) < s) && (fabs(e[1]) < s) && (fabs(e[2]) < s);
 }
 
 typedef struct __attribute__((packed)) {
@@ -238,6 +254,30 @@ inline float linear_to_gamma(float linear_component) {
         return sqrt(linear_component);
     }
     return 0;
+}
+
+char lambertian_scatter(Ray* r_in, HitRecord* rec, Color* attenuation, Ray* scattered, Material* material, mrg31k3p_state* state) {
+    Vec3 random_unit = random_unit_vector(state);
+    Vec3 scatter_direction = vec3_add_vec(&rec->normal, &random_unit);
+    r_in->origin = rec->p;
+    r_in->direction = scatter_direction;
+
+    if(near_zero(scatter_direction.e))
+        scatter_direction = rec->normal;
+
+    *scattered = *r_in;
+    *attenuation = material->albedo;
+    return 1;
+}
+
+char metal_scatter(Ray* r_in, HitRecord* rec, Color* attenuation, Ray* scattered, Material* material, mrg31k3p_state* state) {
+    Vec3 reflected = vec3_reflect(&r_in->direction, &rec->normal);
+    r_in->origin = rec->p;
+    r_in->direction = reflected;
+
+    *scattered = *r_in;
+    *attenuation = material->albedo;
+    return 1;
 }
 
 void write_color(__global uint* output, Color pixel, int index) {
@@ -283,6 +323,7 @@ char hit(Sphere* sphere, Ray* r, Interval* ray_t, HitRecord* rec){
     Vec3 sub = vec3_subtract_vec(&rec->p, &sphere->center);
     Vec3 outward_normal = vec3_divide_scalar(&sub, sphere->radius);
     rec->normal = outward_normal;
+    rec->material = sphere->material;
     set_face_normal(rec, r, &outward_normal);
 
     return 1;
@@ -318,11 +359,17 @@ Color ray_color(Ray* r, World* world, mrg31k3p_state* state, int max_depth) {
 
     while(depth < max_depth) {
         if(world_hit(world, &current_ray, &interval, rec)) {
-            Vec3 random = random_unit_vector(state);
-            Vec3 direction = vec3_add_vec(&random, &rec->normal);
-            current_ray.origin = rec->p;
-            current_ray.direction = direction;
-            accumulated_color = vec3_multiply_scalar(&accumulated_color, 0.5);
+            Ray scattered;
+            Color attenuation;
+            if(rec->material.type == LAMBERTIAN) {
+                if(lambertian_scatter(&current_ray, rec, &attenuation, &scattered, &rec->material, state)){
+                    accumulated_color = vec3_multiply_vec(&accumulated_color, &attenuation);
+                }
+            } else if(rec->material.type = METAL) {
+                if(metal_scatter(&current_ray, rec, &attenuation, &scattered, &rec->material, state)){
+                    accumulated_color = vec3_multiply_vec(&accumulated_color, &attenuation);
+                }
+            }
         } else {
             Vec3 unit_direction = vec3_unit_vector(&current_ray.direction);
             float a = 0.5*(unit_direction.e[1] + 1);
@@ -376,14 +423,30 @@ __kernel void render_kernel(__global uint* output, int width, int height, __glob
 
     World world;
     Sphere sphere1;
-    sphere1.center = vec3_create(0, 0, -1);
+    sphere1.center = vec3_create(0, 0, -1.2);
     sphere1.radius = 0.5;
+    sphere1.material.type = LAMBERTIAN;
+    sphere1.material.albedo = vec3_create(0.1, 0.2, 0.5);
     Sphere sphere2;
     sphere2.center = vec3_create(0, -100.5, -1);
     sphere2.radius = 100;
+    sphere2.material.type = LAMBERTIAN;
+    sphere2.material.albedo = vec3_create(0.8, 0.8, 0);
+    Sphere sphere3;
+    sphere3.center = vec3_create(-1, 0, -1);
+    sphere3.radius = 0.5;
+    sphere3.material.type = METAL;
+    sphere3.material.albedo = vec3_create(0.8, 0.8, 0.8);
+    Sphere sphere4;
+    sphere4.center = vec3_create(1, 0, -1);
+    sphere4.radius = 0.5;
+    sphere4.material.type = METAL;
+    sphere4.material.albedo = vec3_create(0.8, 0.6, 0.2);
     world.objects[0] = sphere1;
     world.objects[1] = sphere2;
-    world.total_objects = 2;
+    world.objects[2] = sphere3;
+    world.objects[3] = sphere4;
+    world.total_objects = 4;
 
     mrg31k3p_state state;
     mrg31k3p_seed(&state, seeds[index]);

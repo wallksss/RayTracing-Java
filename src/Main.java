@@ -15,8 +15,10 @@ public class Main {
         Camera camera = new Camera();
         camera.aspect_ratio = (float) (16.0 / 9.0);
         camera.image_width = 1280;
-        //camera.samples_per_pixel = 100; //quality
-        //camera.max_depth = 50; //quality
+//        camera.samples_per_pixel = 100; //quality
+//        camera.max_depth = 50; //quality
+//        camera.samples_per_pixel = 50; //balanced
+//        camera.max_depth = 25; //balanced
         camera.samples_per_pixel = 10; //performance
         camera.max_depth = 10; //performance
         camera.view_fov = 90;
