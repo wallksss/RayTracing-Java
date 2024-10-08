@@ -22,28 +22,6 @@ public class Color extends Vec3 {
         return 0;
     }
 
-    public static void writeColor(BufferedWriter out, Color pixelColor) {
-        float r = pixelColor.getX();
-        float g = pixelColor.getY();
-        float b = pixelColor.getZ();
-
-        r = linearToGamma(r);
-        g = linearToGamma(g);
-        b = linearToGamma(b);
-
-        Interval intensity = new Interval(0.000f, 0.999f);
-        int rbyte = (int)(256 * intensity.clamp(r));
-        int gbyte = (int)(256 * intensity.clamp(g));
-        int bbyte = (int)(256 * intensity.clamp(b));
-
-        try {
-            out.write(rbyte + " " + gbyte + " " + bbyte);
-            out.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public Color negate() {
         return new Color(-getX(), -getY(), -getZ());

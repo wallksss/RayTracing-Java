@@ -46,11 +46,6 @@ public class Vec3 {
     public float lengthSquared() {
         return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
     }
-    public boolean nearZero() {
-        float s = 1e-8F;
-        return (Math.abs(e[0]) < s) && (Math.abs(e[1]) < s) && (Math.abs(e[2]) < s);
-
-    }
 
     public static Vec3 random() {
         return new Vec3(Util.randomFloat(), Util.randomFloat(), Util.randomFloat());
@@ -109,25 +104,6 @@ public class Vec3 {
 
     public static Vec3 pointToVec(Point3 p) {
         return new Vec3(p.getX(), p.getY(), p.getZ());
-    }
-
-    public static Vec3 randomOnHemisphere(Vec3 normal) {
-        Vec3 onUnitSphere = randomUnitVector();
-        if(Vec3.dot(onUnitSphere, normal) > 0.0)
-            return onUnitSphere;
-        else
-            return onUnitSphere.negate();
-    }
-
-    public static Vec3 reflect(Vec3 v, Vec3 n) {
-        return v.subtract(n.multiply(Vec3.dot(v, n) * 2));
-    }
-
-    public static Vec3 refract(Vec3 uv, Vec3 n, float etaiOverEtat) {
-        float cosTheta = (float) Math.min(Vec3.dot(uv.negate(), n), 1.0);
-        Vec3 rOutPerp = uv.add(n.multiply(cosTheta)).multiply(etaiOverEtat);
-        Vec3 rOutParallel = n.multiply((float) -Math.sqrt(Math.abs(1.0 - rOutPerp.lengthSquared())));
-        return rOutPerp.add(rOutParallel);
     }
 
     public byte[] toByteArray() {

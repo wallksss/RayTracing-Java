@@ -60,7 +60,6 @@ public class Camera {
                 .add(pixelDeltaU.add(pixelDeltaV).multiply(0.5F)));
     }
 
-
     public void rotateCamera(float deltaPitch, float deltaYaw) {
         pitch += deltaPitch;
         yaw += deltaYaw;

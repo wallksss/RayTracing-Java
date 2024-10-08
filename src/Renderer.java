@@ -9,11 +9,11 @@ import static org.jocl.CL.*;
 
 public class Renderer {
     private Camera camera;
-    private Hittable world;
+    private HittableList world;
     private static int width;
     private static int height;
 
-    public Renderer(Camera camera, Hittable world) {
+    public Renderer(Camera camera, HittableList world) {
         this.camera = camera;
         width = camera.image_width;
         height = camera.image_height;

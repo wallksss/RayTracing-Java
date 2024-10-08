@@ -1,14 +1,14 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class HittableList extends Hittable{
-    public final List<Hittable> objects;
+public class HittableList{
+    public final List<Sphere> objects;
 
     public HittableList(){
         this.objects = new ArrayList<>();
     }
 
-    public HittableList(Hittable object) {
+    public HittableList(Sphere object) {
         this.objects = new ArrayList<>();
         objects.add(object);
     }
@@ -17,28 +17,7 @@ public class HittableList extends Hittable{
         objects.clear();
     }
 
-    public void add(Hittable object) {
+    public void add(Sphere object) {
         objects.add(object);
-    }
-
-    @Override
-    public boolean hit(Ray r, Interval ray_t, HitRecord rec) {
-        HitRecord temp_record = new HitRecord();
-        boolean hit_anything = false;
-        float closest_so_far = ray_t.max;
-
-        for(Hittable object : objects){
-            if(object.hit(r, new Interval(ray_t.min, closest_so_far), temp_record)){
-                hit_anything = true;
-                closest_so_far = temp_record.t;
-
-                rec.p = temp_record.p;
-                rec.normal = temp_record.normal;
-                rec.material = temp_record.material;
-                rec.t = temp_record.t;
-                rec.front_face = temp_record.front_face;
-            }
-        }
-        return hit_anything;
     }
 }

@@ -12,6 +12,8 @@ typedef struct {
 typedef struct {
     int type;
     Color albedo;
+    float fuzz;
+    float refraction_index;
 } Material;
 
 typedef struct {
@@ -200,6 +202,23 @@ inline Vec3 vec3_reflect(Vec3* v, Vec3* n) {
     return vec3_subtract_vec(v, &product);
 }
 
+inline Vec3 vec3_refract(Vec3* uv, Vec3* n, float etai_over_etat) {
+    Vec3 negate = vec3_negate(uv);
+    float dot = vec3_dot(&negate, n);
+    float cos_theta = fmin(dot, 1.0f);
+    Vec3 multi = vec3_multiply_scalar(n, cos_theta);
+    Vec3 add = vec3_add_vec(uv, &multi);
+    Vec3 r_out_perp = vec3_multiply_scalar(&add, etai_over_etat);
+    Vec3 r_out_parallel = vec3_multiply_scalar(n, -sqrt(fabs(1.0 - vec3_length_squared(&r_out_perp))));
+    return vec3_add_vec(&r_out_perp, &r_out_parallel);
+}
+
+float reflectance(float cosine, float refraction_index) {
+    float r0 = (1 - refraction_index) / (1 + refraction_index);
+    r0 = r0 * r0;
+    return r0 + (1 - r0) * pow((1 - cosine), 5);
+}
+
 Vec3 vec3_sample_square(mrg31k3p_state* state) {
     float a = random_float(state);
     float b = random_float(state);
@@ -272,11 +291,50 @@ char lambertian_scatter(Ray* r_in, HitRecord* rec, Color* attenuation, Ray* scat
 
 char metal_scatter(Ray* r_in, HitRecord* rec, Color* attenuation, Ray* scattered, Material* material, mrg31k3p_state* state) {
     Vec3 reflected = vec3_reflect(&r_in->direction, &rec->normal);
+    reflected = vec3_unit_vector(&reflected);
+    Vec3 random = random_unit_vector(state);
+    Vec3 fuzz = vec3_multiply_scalar(&random, material->fuzz);
+    reflected = vec3_add_vec(&reflected, &fuzz);
     r_in->origin = rec->p;
     r_in->direction = reflected;
 
     *scattered = *r_in;
     *attenuation = material->albedo;
+
+    if(vec3_dot(&scattered->direction, &rec->normal) > 0)
+        return 1;
+    else
+        return 0;
+}
+
+char dieletric_scatter(Ray* r_in, HitRecord* rec, Color* attenuation, Ray* scattered, Material* material, mrg31k3p_state* state) {
+    *attenuation = vec3_create(1, 1, 1);
+    float ri = rec->front_face ? (1.0 / material->refraction_index) : material->refraction_index;
+
+    Vec3 unit_direction = vec3_unit_vector(&r_in->direction);
+    Vec3 negate = vec3_negate(&unit_direction);
+    float dot = vec3_dot(&negate, &rec->normal);
+    float cos_theta = fmin(dot, 1.0f);
+    float sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+
+    char cannot_refract;
+    if(ri * sin_theta > 1.0)
+        cannot_refract = 1;
+    else
+        cannot_refract = 0;
+
+    Vec3 direction;
+
+    if(cannot_refract || reflectance(cos_theta, ri) > random_float(state))  
+        direction = vec3_reflect(&unit_direction, &rec->normal);
+    else    
+        direction = vec3_refract(&unit_direction, &rec->normal, ri);
+
+
+    r_in->origin = rec->p;
+    r_in->direction = direction;
+
+    *scattered = *r_in;
     return 1;
 }
 
@@ -365,8 +423,12 @@ Color ray_color(Ray* r, World* world, mrg31k3p_state* state, int max_depth) {
                 if(lambertian_scatter(&current_ray, rec, &attenuation, &scattered, &rec->material, state)){
                     accumulated_color = vec3_multiply_vec(&accumulated_color, &attenuation);
                 }
-            } else if(rec->material.type = METAL) {
+            } else if(rec->material.type == METAL) {
                 if(metal_scatter(&current_ray, rec, &attenuation, &scattered, &rec->material, state)){
+                    accumulated_color = vec3_multiply_vec(&accumulated_color, &attenuation);
+                }
+            } else if(rec->material.type == DIELETRIC) {
+                if(dieletric_scatter(&current_ray, rec, &attenuation, &scattered, &rec->material, state)) {
                     accumulated_color = vec3_multiply_vec(&accumulated_color, &attenuation);
                 }
             }
@@ -435,18 +497,26 @@ __kernel void render_kernel(__global uint* output, int width, int height, __glob
     Sphere sphere3;
     sphere3.center = vec3_create(-1, 0, -1);
     sphere3.radius = 0.5;
-    sphere3.material.type = METAL;
-    sphere3.material.albedo = vec3_create(0.8, 0.8, 0.8);
+    sphere3.material.type = DIELETRIC;
+    //sphere3.material.albedo = vec3_create(0.8, 0.8, 0.8);
+    sphere3.material.refraction_index = 1.5;
+    Sphere sphere5;
+    sphere5.center = vec3_create(-1, 0, -1);
+    sphere5.radius = 0.4;
+    sphere5.material.type = DIELETRIC;
+    sphere5.material.refraction_index = 1 / 1.5;
     Sphere sphere4;
     sphere4.center = vec3_create(1, 0, -1);
     sphere4.radius = 0.5;
     sphere4.material.type = METAL;
     sphere4.material.albedo = vec3_create(0.8, 0.6, 0.2);
+    sphere4.material.fuzz = 0.5;
     world.objects[0] = sphere1;
     world.objects[1] = sphere2;
     world.objects[2] = sphere3;
     world.objects[3] = sphere4;
-    world.total_objects = 4;
+    world.objects[4] = sphere5;
+    world.total_objects = 5;
 
     mrg31k3p_state state;
     mrg31k3p_seed(&state, seeds[index]);
